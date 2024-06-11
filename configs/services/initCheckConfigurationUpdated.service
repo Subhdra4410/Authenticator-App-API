@@ -1,0 +1,8 @@
+[Unit]
+After=network.target
+
+[Service]
+ExecStart=/opt/scripts/check_configuration_updated.sh
+
+[Install]
+WantedBy=default.target

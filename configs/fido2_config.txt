@@ -1,0 +1,3 @@
+timeout=60
+user_verification=discouraged
+auto_provisioning=false

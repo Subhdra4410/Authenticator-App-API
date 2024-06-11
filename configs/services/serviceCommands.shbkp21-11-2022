@@ -1,0 +1,28 @@
+#!/bin/bash
+mkdir -p /var/www/html/authenticatorapp/
+cp -rf /var/www/html/temp/*  /var/www/html/authenticatorapp/
+cp -rf /var/www/html/temp/.env  /var/www/html/authenticatorapp/
+rm -rf /var/www/html/temp
+chmod -R 777 ./authenticatorapp
+sed -i -e 's/\r$//' update_configurations.sh
+bash /opt/scripts/update_configurations.sh
+service php8.1-fpm restart
+service nginx restart
+service supervisor start
+service cron restart
+crontab /etc/cron.d/run_scheduler_cronjob
+/etc/init.d/redis-server start
+<<<<<<< HEAD
+=======
+if [ ! -d "/var/www/html/authenticatorapp" ]; then
+    mkdir  /var/www/html/authenticatorapp
+fi
+
+if [ -d "/var/www/html/temp" ]; then
+    cp -rf /var/www/html/temp/*  /var/www/html/authenticatorapp/
+    cp -rf /var/www/html/temp/.env  /var/www/html/authenticatorapp/
+    rm -rf /var/www/html/temp
+fi
+>>>>>>> ead7f2529f2fc61e1ace2875fe0a6cde41e88d36
+php /var/www/html/authenticatorapp/artisan migrate
+#php /var/www/html/authenticatorapp/artisan db:seed

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+exec 1> >(logger -s -t $(basename $0)) 2>&1
+source /opt/grs/greenradius/grs_fido2_authenticator/config.txt
+echo "executing update configuration script $DOMAIN"
+sed -i "s/APP_URL\=.*/APP_URL\=https:\/\/$DOMAIN/" "/var/www/html/authenticatorapp/.env"
+sed -i "s/RELYING_PARTY\=.*\$/RELYING_PARTY\=$DOMAIN/" "/var/www/html/authenticatorapp/.env"
+sed -i "s/DB_HOST\=.*\$/DB_HOST\=$DB_HOST/" "/var/www/html/authenticatorapp/.env"
+sed -i "s/LOG_CHANNEL\=.*\$/LOG_CHANNEL\=syslog/" "/var/www/html/authenticatorapp/.env"
+DB_PASSWORD=$(echo $DB_PASSWORD | sed -e "s/\//\\\\\//g");
+DB_PASSWORD=$(echo $DB_PASSWORD | sed -e "s/\=/\\\\\=/g");
+sed -i "s/DB_DATABASE\=.*\$/DB_DATABASE\=$DB_DATABASE/" "/var/www/html/authenticatorapp/.env"
+sed -i "s/DB_USERNAME\=.*\$/DB_USERNAME\=$DB_USERNAME/" "/var/www/html/authenticatorapp/.env"
+sed -i "s/DB_PASSWORD\=.*\$/DB_PASSWORD\=$DB_PASSWORD/" "/var/www/html/authenticatorapp/.env"
+sed -i "s|APP_TIMEZONE\=.*\$|APP_TIMEZONE\=$(cat /etc/timezone)|" "/var/www/html/authenticatorapp/.env"
+sed -i "s/LARAVEL_ECHO_PORT\=.*\$/LARAVEL_ECHO_PORT\=$LARAVEL_ECHO_PORT/" "/var/www/html/authenticatorapp/.env"
+sed -i "s/GRVA_URL\=.*/GRVA_URL\=\"https:\/\/$GRVA_HOSTNAME\"/" "/var/www/html/authenticatorapp/.env"
+sed -i 's/\"authHost\":.*/\"authHost\":"https:\/\/'$GRVA_CLIENT_HOSTNAME':'$GRVA_CLIENT_API_PORT'"\,/' "/var/www/html/authenticatorapp/laravel-echo-server-ssl.json"
+sed -i 's/\"authHost\":.*/\"authHost\":"https:\/\/'$DOMAIN'"\,/' "/var/www/html/authenticatorapp/laravel-echo-server.json"
+sed -i --follow-symlinks "s/server_name $PARTITION_COLUMN.*/server_name $DOMAIN www.$DOMAIN; /" "/etc/nginx/sites-available/api.grs-fido2.com"
+sed -i --follow-symlinks "s/server_name $PARTITION_COLUMN.*/server_name $DOMAIN www.$DOMAIN; /" "/etc/nginx/sites-available/app.grs-fido2.com"
+
+sed -i "s/GRVA_BASIC_AUTH_USERNAME\=.*\$/GRVA_BASIC_AUTH_USERNAME\=$GRVA_BASIC_AUTH_USERNAME/" "/var/www/html/authenticatorapp/.env"
+sed -i "s/GRVA_BASIC_AUTH_PASSWORD\=.*\$/GRVA_BASIC_AUTH_PASSWORD\=$GRVA_BASIC_AUTH_PASSWORD/" "/var/www/html/authenticatorapp/.env"
+
+sed -i "s/window\['env'\]\['dev_apiUrl'\]\=.*/window\['env'\]\['dev_apiUrl'\]\=\"https:\/\/$DOMAIN\/\"\;/" "../../var/www/html/authenticationappui/en-US/assets/configs/env.js"
+sed -i "s/window\['env'\]\['dev_FIDO2_BASIC_AUTH_USERNAME']\=.*/window\['env'\]\['dev_FIDO2_BASIC_AUTH_USERNAME'\]\='$GRVA_CLIENT_BASIC_AUTH_USERNAME'\;/" "../../var/www/html/authenticationappui/en-US/assets/configs/env.js"
+sed -i "s/window\['env'\]\['dev_FIDO2_BASIC_AUTH_PASSWORD'\]\=.*/window\['env'\]\['dev_FIDO2_BASIC_AUTH_PASSWORD'\]\='$GRVA_CLIENT_BASIC_AUTH_PASSWORD'\;/" "../../var/www/html/authenticationappui/en-US/assets/configs/env.js"
+
+sed -i "s/window\['env'\]\['dev_apiUrl'\]\=.*/window\['env'\]\['dev_apiUrl'\]\=\"https:\/\/$DOMAIN\/\"\;/" "../../var/www/html/authenticationappui/es/assets/configs/env.js"
+sed -i "s/window\['env'\]\['dev_FIDO2_BASIC_AUTH_USERNAME']\=.*/window\['env'\]\['dev_FIDO2_BASIC_AUTH_USERNAME'\]\='$GRVA_CLIENT_BASIC_AUTH_USERNAME'\;/" "../../var/www/html/authenticationappui/es/assets/configs/env.js"
+sed -i "s/window\['env'\]\['dev_FIDO2_BASIC_AUTH_PASSWORD'\]\=.*/window\['env'\]\['dev_FIDO2_BASIC_AUTH_PASSWORD'\]\='$GRVA_CLIENT_BASIC_AUTH_PASSWORD'\;/" "../../var/www/html/authenticationappui/es/assets/configs/env.js"
+
+#sed -i "s/window\['env'\]\['prod_apiUrl'\]\=.*/window\['env'\]\['prod_apiUrl'\]\=\"https:\/\/$DOMAIN:$FIDO2_API_PORT\/\"\;/" $angular_config_file
+#sed -i "s/window\['env'\]\['prod_FIDO2_BASIC_AUTH_USERNAME']\=.*/window\['env'\]\['prod_FIDO2_BASIC_AUTH_USERNAME'\]\='$FIDO2_BASIC_AUTH_USERNAME'\;/" $angular_config_file
+#sed -i "s/window\['env'\]\['prod_FIDO2_BASIC_AUTH_PASSWORD'\]\=.*/window\['env'\]\['prod_FIDO2_BASIC_AUTH_PASSWORD'\]\='$FIDO2_BASIC_AUTH_PASSWORD'\;/" $angular_config_file

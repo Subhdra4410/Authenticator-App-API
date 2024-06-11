@@ -1,0 +1,14 @@
+#!/bin/bash
+service php8.1-fpm restart
+service nginx restart
+/etc/init.d/redis-server start
+cp /opt/authenticatorapp /var/www/html/authenticatorapp
+cp /opt/configs/laravel/.env  /var/www/html/authenticatorapp/.env
+cp /opt/configs/laravel/laravel-echo-server.json /var/www/html/authenticatorapp/laravel-echo-server.json
+cp /opt/configs/laravel/laravel-echo-server-ssl.json /var/www/html/authenticatorapp/laravel-echo-server-ssl.json
+cp /opt/configs/services/serviceCommands.sh /opt/serviceCommands.sh
+php /var/www/html/authenticatorapp/artisan key:generate
+php /var/www/html/authenticatorapp/artisan config:cache
+php /var/www/html/authenticatorapp/artisan view:cache
+php /var/www/html/authenticatorapp/artisan migrate
+php /var/www/html/authenticatorapp/artisan db:seed
